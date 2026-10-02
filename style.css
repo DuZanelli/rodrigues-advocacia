@@ -872,6 +872,11 @@ button { font: inherit; cursor: pointer; border: 0; background: none; color: inh
 }
 .js .reveal.is-visible { opacity: 1; transform: none; }
 
+/* No celular e tablet, o conteúdo aparece sempre, sem depender da animação */
+@media (max-width: 860px) {
+  .js .reveal { opacity: 1; transform: none; transition: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
