@@ -72,7 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
         obs.unobserve(entry.target);
       });
     },
-    { threshold: 0.15 }
+    // Aparece assim que o topo do bloco entra na tela
+    // (funciona também para blocos muito altos, como o texto das áreas no celular)
+    { threshold: 0, rootMargin: '0px 0px -60px 0px' }
   );
   document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
 
