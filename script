@@ -1,0 +1,221 @@
+/* =========================================================
+   Rodrigues Advocacia — scripts
+   ========================================================= */
+
+// Marca que o JS está ativo (as animações só rodam com JS)
+document.documentElement.classList.add('js');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const header = document.getElementById('header');
+  const nav = document.getElementById('nav');
+  const menuToggle = document.getElementById('menuToggle');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Menu mobile ---------- */
+  const setMenu = (open) => {
+    nav.classList.toggle('is-open', open);
+    menuToggle.classList.toggle('is-open', open);
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuToggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+  };
+
+  menuToggle.addEventListener('click', () => {
+    setMenu(!nav.classList.contains('is-open'));
+  });
+
+  // Fecha ao clicar num link
+  nav.querySelectorAll('a').forEach((link) =>
+    link.addEventListener('click', () => setMenu(false))
+  );
+
+  // Fecha com ESC ou clique fora
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setMenu(false);
+  });
+  document.addEventListener('click', (e) => {
+    if (!header.contains(e.target)) setMenu(false);
+  });
+
+  /* ---------- Sombra no cabeçalho ao rolar ---------- */
+  const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 10);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  /* ---------- Link ativo no menu conforme a seção ---------- */
+  // Só na página inicial (links do tipo "#areas")
+  const navLinks = [...document.querySelectorAll('.nav__link')]
+    .filter((link) => link.getAttribute('href').startsWith('#'));
+  const sections = navLinks
+    .map((link) => document.querySelector(link.getAttribute('href')))
+    .filter(Boolean);
+
+  const sectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const id = '#' + entry.target.id;
+        navLinks.forEach((link) =>
+          link.classList.toggle('is-active', link.getAttribute('href') === id)
+        );
+      });
+    },
+    { rootMargin: '-45% 0px -50% 0px' }
+  );
+  sections.forEach((s) => sectionObserver.observe(s));
+
+  /* ---------- Animação de entrada ---------- */
+  const revealObserver = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-visible');
+        obs.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.15 }
+  );
+  document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+  /* ---------- Contadores animados ---------- */
+  const formatNumber = (n) => n.toLocaleString('pt-BR');
+
+  const animateCounter = (el) => {
+    const target = Number(el.dataset.count);
+    const prefix = el.dataset.prefix || '';
+    const suffix = el.dataset.suffix || '';
+    const render = (value) => (el.textContent = prefix + formatNumber(value) + suffix);
+
+    if (reduceMotion) return render(target);
+
+    const duration = 1600;
+    const start = performance.now();
+
+    const step = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out
+      render(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const counterObserver = new IntersectionObserver(
+    (entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        animateCounter(entry.target);
+        obs.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.6 }
+  );
+  document.querySelectorAll('[data-count]').forEach((el) => counterObserver.observe(el));
+
+  /* ---------- Carrossel ---------- */
+  const carousel = document.getElementById('carousel');
+  if (carousel) {
+    const slides = [...carousel.querySelectorAll('.carousel__slide')];
+    const dotsBox = carousel.querySelector('.carousel__dots');
+    const INTERVAL = 5000; // tempo de cada foto (ms)
+    let current = 0;
+    let timer = null;
+
+    // Cria as bolinhas automaticamente (uma por foto)
+    const dots = slides.map((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'carousel__dot';
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', `Ir para a foto ${i + 1}`);
+      dot.addEventListener('click', () => { goTo(i); restart(); });
+      dotsBox.appendChild(dot);
+      return dot;
+    });
+
+    const goTo = (index) => {
+      current = (index + slides.length) % slides.length;
+      slides.forEach((s, i) => {
+        const active = i === current;
+        s.classList.toggle('is-active', active);
+        s.setAttribute('aria-hidden', String(!active));
+      });
+      dots.forEach((d, i) => {
+        d.classList.toggle('is-active', i === current);
+        d.setAttribute('aria-selected', String(i === current));
+      });
+    };
+
+    const next = () => goTo(current + 1);
+    const prev = () => goTo(current - 1);
+
+    const start = () => {
+      if (reduceMotion || timer) return;
+      timer = setInterval(next, INTERVAL);
+    };
+    const stop = () => { clearInterval(timer); timer = null; };
+    const restart = () => { stop(); start(); };
+
+    carousel.querySelector('.carousel__arrow--next').addEventListener('click', () => { next(); restart(); });
+    carousel.querySelector('.carousel__arrow--prev').addEventListener('click', () => { prev(); restart(); });
+
+    // Pausa quando o mouse está em cima ou quando algo dentro dele tem foco
+    carousel.addEventListener('mouseenter', stop);
+    carousel.addEventListener('mouseleave', start);
+    carousel.addEventListener('focusin', stop);
+    carousel.addEventListener('focusout', start);
+
+    // Setas do teclado
+    carousel.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { next(); restart(); }
+      if (e.key === 'ArrowLeft') { prev(); restart(); }
+    });
+
+    // Arrastar com o dedo (celular)
+    let touchX = null;
+    carousel.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; stop(); }, { passive: true });
+    carousel.addEventListener('touchend', (e) => {
+      if (touchX === null) return;
+      const diff = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(diff) > 40) (diff < 0 ? next : prev)();
+      touchX = null;
+      start();
+    });
+
+    // Pausa quando a aba não está visível
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    goTo(0);
+    start();
+  }
+
+  /* ---------- WhatsApp ----------
+     Troque pelo número do escritório: 55 + DDD + número, só dígitos. */
+  const WHATSAPP_NUMBER = '5511999999999';
+
+  document.querySelectorAll('[data-whatsapp]').forEach((link) => {
+    const message = link.dataset.whatsapp;
+    link.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    link.target = '_blank';
+    link.rel = 'noopener';
+  });
+
+  /* ---------- Botões de compartilhar (páginas das áreas) ---------- */
+  const pageUrl = encodeURIComponent(window.location.href);
+  const pageTitle = encodeURIComponent(document.title);
+  const shareLinks = {
+    whatsapp: `https://wa.me/?text=${pageTitle}%20${pageUrl}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`,
+    email: `mailto:?subject=${pageTitle}&body=${pageUrl}`,
+  };
+  document.querySelectorAll('[data-share]').forEach((link) => {
+    link.href = shareLinks[link.dataset.share];
+    if (link.dataset.share !== 'email') {
+      link.target = '_blank';
+      link.rel = 'noopener';
+    }
+  });
+
+  /* ---------- Ano no rodapé ---------- */
+  const year = document.getElementById('year');
+  if (year) year.textContent = new Date().getFullYear();
+});

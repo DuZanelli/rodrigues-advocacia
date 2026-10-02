@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contato | Rodrigues Advocacia</title>
+  <meta name="description" content="Fale com os advogados da Rodrigues Advocacia e agende uma consulta. Avenida das Nações Unidas, 12901, Brooklin Paulista, São Paulo - SP.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href="logo-icone.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Rodrigues Advocacia - página inicial">
+        <svg class="brand__logo" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="8" fill="#2c4f7c"/>
+          <text x="24" y="33" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="29" fill="#ffffff">R</text>
+          <rect x="11" y="37.5" width="26" height="2.5" fill="#86dcc6"/>
+        </svg>
+        <span class="brand__text">
+          <strong>Rodrigues</strong>
+          <small>Advocacia</small>
+        </span>
+      </a>
+
+      <nav class="nav" id="nav" aria-label="Menu principal">
+        <ul class="nav__list">
+          <li><a href="index.html" class="nav__link">Início</a></li>
+          <li><a href="index.html#areas" class="nav__link">Áreas de atuação</a></li>
+          <li><a href="endereco.html" class="nav__link">Endereço</a></li>
+          <li><a href="contato.html" class="nav__link is-active">Contato</a></li>
+        </ul>
+        <a href="contato.html" class="btn btn--light nav__cta">Agendar conversa</a>
+      </nav>
+
+      <div class="header__actions">
+        <a href="contato.html" class="icon-btn" aria-label="Área do cliente" title="Área do cliente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        </a>
+        <a href="contato.html" class="btn btn--light header__cta">Agendar conversa</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="contact">
+      <div class="container contact__grid">
+
+        <!-- Informações -->
+        <div class="contact__info reveal">
+          <nav class="breadcrumb" aria-label="Você está em">
+            <a href="index.html">Início</a> <span aria-hidden="true">/</span>
+            <span aria-current="page">Contato</span>
+          </nav>
+          <h1 class="contact__title"><span>Contate</span> nossos profissionais</h1>
+          <p class="contact__lead">Preencha o formulário e um dos nossos advogados entrará em contato para agendar a sua consulta.</p>
+
+          <ul class="contact__list">
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <div>
+                <strong>Sede</strong>
+                <span>Av. das Nações Unidas, 12901</span>
+                <span>Torre Oeste, 17º e 25º andares</span>
+                <span>Brooklin Paulista — São Paulo - SP</span>
+                <span>CEP 04578-910</span>
+                <a href="endereco.html" class="contact__map-link">Ver no mapa <span aria-hidden="true">»</span></a>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Formulário -->
+        <div class="contact__card reveal" style="--delay: .1s">
+          <form class="form" id="contactForm" novalidate>
+            <div class="form__field">
+              <label for="nome">Seu nome <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="nome" name="nome" autocomplete="name" required>
+              <small class="form__error"></small>
+            </div>
+
+            <div class="form__field">
+              <label for="email">Seu e-mail <span class="req" aria-hidden="true">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" required>
+              <small class="form__error"></small>
+            </div>
+
+            <div class="form__field">
+              <label for="telefone">Seu telefone <span class="req" aria-hidden="true">*</span></label>
+              <input type="tel" id="telefone" name="telefone" autocomplete="tel" placeholder="(11) 00000-0000" required>
+              <small class="form__error"></small>
+            </div>
+
+            <div class="form__row">
+              <div class="form__field">
+                <label for="perfil">Você é <span class="req" aria-hidden="true">*</span></label>
+                <select id="perfil" name="perfil" required>
+                  <option value="">Selecione</option>
+                  <option value="pessoa-fisica">Pessoa física</option>
+                  <option value="empresa">Empresa</option>
+                </select>
+                <small class="form__error"></small>
+              </div>
+
+              <div class="form__field">
+                <label for="area">Área de interesse</label>
+                <select id="area" name="area">
+                  <option value="">Não sei / Outra</option>
+                <option value="direito-tributario">Direito tributário</option>
+                <option value="direito-trabalhista">Direito trabalhista</option>
+                <option value="direito-civil">Direito civil</option>
+                <option value="direito-empresarial">Direito empresarial</option>
+                <option value="direito-previdenciario">Direito previdenciário</option>
+                <option value="familia-e-sucessoes">Família e sucessões</option>
+                <option value="direito-penal">Direito penal</option>
+                <option value="direito-do-consumidor">Direito do consumidor</option>
+                <option value="direito-imobiliario">Direito imobiliário</option>
+                <option value="contencioso-de-grande-volume">Contencioso de grande volume</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form__field">
+              <label for="mensagem">Como podemos ajudar?</label>
+              <textarea id="mensagem" name="mensagem" rows="4" placeholder="Conte brevemente o seu caso"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--lg form__submit">Enviar</button>
+            <p class="form__status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="year"></span> Rodrigues Advocacia — Sociedade de Advogados</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

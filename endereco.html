@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Endereço | Rodrigues Advocacia</title>
+  <meta name="description" content="Rodrigues Advocacia: Avenida das Nações Unidas, 12901, Torre Oeste, Centro Empresarial Nações Unidas, Brooklin Paulista, São Paulo - SP.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href="logo-icone.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Rodrigues Advocacia - página inicial">
+        <svg class="brand__logo" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="8" fill="#2c4f7c"/>
+          <text x="24" y="33" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="29" fill="#ffffff">R</text>
+          <rect x="11" y="37.5" width="26" height="2.5" fill="#86dcc6"/>
+        </svg>
+        <span class="brand__text">
+          <strong>Rodrigues</strong>
+          <small>Advocacia</small>
+        </span>
+      </a>
+
+      <nav class="nav" id="nav" aria-label="Menu principal">
+        <ul class="nav__list">
+          <li><a href="index.html" class="nav__link">Início</a></li>
+          <li><a href="index.html#areas" class="nav__link">Áreas de atuação</a></li>
+          <li><a href="endereco.html" class="nav__link is-active">Endereço</a></li>
+          <li><a href="contato.html" class="nav__link">Contato</a></li>
+        </ul>
+        <a href="contato.html" class="btn btn--light nav__cta">Agendar conversa</a>
+      </nav>
+
+      <div class="header__actions">
+        <a href="contato.html" class="icon-btn" aria-label="Área do cliente" title="Área do cliente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        </a>
+        <a href="contato.html" class="btn btn--light header__cta">Agendar conversa</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Você está em">
+          <a href="index.html">Início</a> <span aria-hidden="true">/</span>
+          <span aria-current="page">Endereço</span>
+        </nav>
+        <h1 class="page-hero__title">Nosso endereço</h1>
+      </div>
+    </section>
+
+    <section class="address">
+      <div class="container address__grid">
+
+        <!-- Dados do endereço -->
+        <div class="address-card reveal">
+          <p class="eyebrow address-card__eyebrow">Centro Empresarial Nações Unidas</p>
+          <h2 class="address-card__title">Venha nos visitar</h2>
+
+          <ul class="address-card__list">
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+              <div>
+                <strong>Endereço</strong>
+                <span>Avenida das Nações Unidas, 12901</span>
+                <span>Torre Oeste, 17º e 25º andares</span>
+              </div>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+              <div>
+                <strong>Bairro</strong>
+                <span>Brooklin Paulista</span>
+              </div>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-5h6v5"/></svg>
+              <div>
+                <strong>Cidade / UF</strong>
+                <span>São Paulo - SP</span>
+              </div>
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h4M7 14h8"/></svg>
+              <div>
+                <strong>CEP</strong>
+                <span>04578-910</span>
+              </div>
+            </li>
+          </ul>
+
+          <a href="https://www.google.com/maps/dir/?api=1&destination=Avenida%20das%20Na%C3%A7%C3%B5es%20Unidas%2C%2012901%20-%20Brooklin%20Paulista%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2004578-910" class="btn btn--primary btn--lg address-card__btn" target="_blank" rel="noopener">Como chegar</a>
+        </div>
+
+        <!-- Mapa -->
+        <div class="map reveal" style="--delay: .1s">
+          <iframe
+            src="https://www.google.com/maps?q=Avenida%20das%20Na%C3%A7%C3%B5es%20Unidas%2C%2012901%20-%20Brooklin%20Paulista%2C%20S%C3%A3o%20Paulo%20-%20SP%2C%2004578-910&z=16&output=embed"
+            title="Mapa com a localização da Rodrigues Advocacia"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="year"></span> Rodrigues Advocacia — Sociedade de Advogados</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

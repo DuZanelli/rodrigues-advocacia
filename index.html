@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rodrigues Advocacia | Áreas de atuação</title>
+  <meta name="description" content="Rodrigues Advocacia — sociedade de advogados com +60 anos de atuação. Áreas de atuação para pessoas físicas e empresas.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href="logo-icone.svg">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ================= CABEÇALHO ================= -->
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="#inicio" class="brand" aria-label="Rodrigues Advocacia - início">
+        <svg class="brand__logo" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="8" fill="#2c4f7c"/>
+          <text x="24" y="33" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="29" fill="#ffffff">R</text>
+          <rect x="11" y="37.5" width="26" height="2.5" fill="#86dcc6"/>
+        </svg>
+        <span class="brand__text">
+          <strong>Rodrigues</strong>
+          <small>Advocacia</small>
+        </span>
+      </a>
+
+      <nav class="nav" id="nav" aria-label="Menu principal">
+        <ul class="nav__list">
+          <li><a href="#inicio" class="nav__link">Início</a></li>
+          <li><a href="#areas" class="nav__link">Áreas de atuação</a></li>
+          <li><a href="endereco.html" class="nav__link">Endereço</a></li>
+          <li><a href="contato.html" class="nav__link">Contato</a></li>
+        </ul>
+        <a href="contato.html" class="btn btn--light nav__cta">Agendar conversa</a>
+      </nav>
+
+      <div class="header__actions">
+        <a href="contato.html" class="icon-btn" aria-label="Área do cliente" title="Área do cliente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        </a>
+        <a href="contato.html" class="btn btn--light header__cta">Agendar conversa</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= HERO ================= -->
+    <section class="hero" id="inicio">
+      <div class="container hero__inner">
+        <h1 class="sr-only">Rodrigues Advocacia — áreas de atuação para pessoas físicas e empresas</h1>
+
+        <!-- ===== CARROSSEL ===== -->
+        <div class="carousel reveal" id="carousel" role="region" aria-roledescription="carrossel" aria-label="Fotos do escritório">
+          <div class="carousel__track">
+            <figure class="carousel__slide is-active" aria-roledescription="slide" aria-label="1 de 3">
+              <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1200&q=80&auto=format&fit=crop"
+                   alt="Estátua da Justiça segurando uma espada">
+              <figcaption class="carousel__caption">
+                <span class="eyebrow">Sociedade de advogados · Atuação nacional</span>
+                <strong>Áreas de atuação para pessoas físicas e empresas</strong>
+              </figcaption>
+            </figure>
+
+            <figure class="carousel__slide" aria-roledescription="slide" aria-label="2 de 3">
+              <img src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1200&q=80&auto=format&fit=crop"
+                   alt="Estante com livros jurídicos" loading="lazy">
+              <figcaption class="carousel__caption">
+                <span class="eyebrow">Desde 1966</span>
+                <strong>+60 anos de tradição e estudo do direito</strong>
+              </figcaption>
+            </figure>
+
+            <figure class="carousel__slide" aria-roledescription="slide" aria-label="3 de 3">
+              <img src="https://images.unsplash.com/photo-1758518731462-d091b0b4ed0d?w=1200&q=80&auto=format&fit=crop"
+                   alt="Reunião de negócios com assinatura de contrato" loading="lazy">
+              <figcaption class="carousel__caption">
+                <span class="eyebrow">Parcerias de verdade</span>
+                <strong>Com quem confia a nós o lado difícil do direito</strong>
+              </figcaption>
+            </figure>
+          </div>
+
+          <button class="carousel__arrow carousel__arrow--prev" aria-label="Foto anterior">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <button class="carousel__arrow carousel__arrow--next" aria-label="Próxima foto">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+
+          <div class="carousel__dots" role="tablist" aria-label="Escolher foto"></div>
+        </div>
+
+        <div class="hero__stats reveal" style="--delay: .15s">
+          <div class="hero__stat">
+            <strong data-count="60" data-prefix="+">+60</strong>
+            <span>Anos de atuação contínua</span>
+          </div>
+          <div class="hero__stat">
+            <strong data-count="10">10</strong>
+            <span>Áreas do direito atendidas</span>
+          </div>
+          <div class="hero__stat">
+            <strong data-count="25" data-prefix="+" data-suffix=" mil">+25 mil</strong>
+            <span>Clientes atendidos</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ÁREAS DE ATUAÇÃO ================= -->
+    <section class="areas" id="areas">
+      <div class="container">
+        <div class="section-title reveal">
+          <h2>Áreas de atuação</h2>
+          <div class="section-title__divider" aria-hidden="true">
+            <span class="line"></span>
+            <svg viewBox="0 0 32 32" class="scale-icon"><path d="M16 4v24M10 28h12M6 9h20M6 9l-4 9h8l-4-9zM26 9l-4 9h8l-4-9z"/><path d="M2 18a4 3 0 0 0 8 0M22 18a4 3 0 0 0 8 0"/></svg>
+            <span class="line"></span>
+          </div>
+          <p>Rodrigues Advocacia</p>
+          <p class="section-title__lead">Somos <strong>especialistas em Direito Tributário</strong> e oferecemos atendimento completo em todas as áreas abaixo, para pessoas físicas e empresas.</p>
+        </div>
+
+        <!-- Cards principais (o primeiro é o foco do escritório) -->
+        <div class="cards">
+          <article class="card card--focus reveal">
+            <div class="card__media">
+              <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80&auto=format&fit=crop" alt="Documentos fiscais e calculadora" loading="lazy">
+              <span class="card__badge">Nosso foco</span>
+            </div>
+            <div class="card__body">
+              <h3><a href="direito-tributario.html">Direito tributário</a></h3>
+              <p class="card__desc">Planejamento, recuperação de créditos e defesa fiscal</p>
+              <span class="card__link">Consultar <span aria-hidden="true">»</span></span>
+            </div>
+          </article>
+
+          <article class="card reveal" style="--delay: 0.08s">
+            <div class="card__media">
+              <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80&auto=format&fit=crop" alt="Equipe trabalhando em escritório" loading="lazy">
+            </div>
+            <div class="card__body">
+              <h3><a href="direito-trabalhista.html">Direito trabalhista</a></h3>
+              <p class="card__desc">Prevenção e defesa para empresas e trabalhadores</p>
+              <span class="card__link">Consultar <span aria-hidden="true">»</span></span>
+            </div>
+          </article>
+
+          <article class="card reveal" style="--delay: 0.16s">
+            <div class="card__media">
+              <img src="https://images.unsplash.com/photo-1618771623063-6c3faa854a61?w=800&q=80&auto=format&fit=crop" alt="Martelo de juiz sobre livro aberto" loading="lazy">
+            </div>
+            <div class="card__body">
+              <h3><a href="direito-civil.html">Direito civil</a></h3>
+              <p class="card__desc">Contratos, indenizações e cobranças</p>
+              <span class="card__link">Consultar <span aria-hidden="true">»</span></span>
+            </div>
+          </article>
+
+          <article class="card reveal" style="--delay: 0.24s">
+            <div class="card__media">
+              <img src="https://images.unsplash.com/photo-1758518731462-d091b0b4ed0d?w=800&q=80&auto=format&fit=crop" alt="Reunião de negócios com assinatura de contrato" loading="lazy">
+            </div>
+            <div class="card__body">
+              <h3><a href="direito-empresarial.html">Direito empresarial</a></h3>
+              <p class="card__desc">Sociedades, contratos e reorganizações</p>
+              <span class="card__link">Consultar <span aria-hidden="true">»</span></span>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- Demais áreas -->
+        <ul class="area-list">
+          <li class="area-item area-item--green reveal"><a href="direito-previdenciario.html">Direito previdenciário</a></li>
+          <li class="area-item area-item--blue reveal"><a href="familia-e-sucessoes.html">Família e sucessões</a></li>
+          <li class="area-item area-item--mint reveal"><a href="direito-penal.html">Direito penal</a></li>
+          <li class="area-item area-item--green reveal"><a href="direito-do-consumidor.html">Direito do consumidor</a></li>
+          <li class="area-item area-item--blue reveal"><a href="direito-imobiliario.html">Direito imobiliário</a></li>
+          <li class="area-item area-item--mint reveal"><a href="contencioso-de-grande-volume.html">Contencioso de grande volume</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================= NÚMEROS ================= -->
+    <section class="numbers" aria-label="Números do escritório">
+      <div class="container numbers__inner">
+        <div class="numbers__item">
+          <strong data-count="60" data-prefix="+">+60</strong>
+          <span>anos de atuação</span>
+        </div>
+        <div class="numbers__item">
+          <strong data-count="10">10</strong>
+          <span>áreas do direito</span>
+        </div>
+        <div class="numbers__item">
+          <strong data-count="25000" data-prefix="+">+25.000</strong>
+          <span>clientes atendidos</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Próximas seções (Escritório, Contato...) entram aqui -->
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="year"></span> Rodrigues Advocacia — Sociedade de Advogados</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
