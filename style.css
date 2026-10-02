@@ -956,3 +956,6 @@ button { font: inherit; cursor: pointer; border: 0; background: none; color: inh
     border-top: 1px solid rgba(255,255,255,.2);
   }
 }
+
+/* Esconde o botão de "Área do cliente" no topo */
+.icon-btn { display: none; }
