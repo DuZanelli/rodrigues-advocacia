@@ -1188,3 +1188,9 @@ button { font: inherit; cursor: pointer; border: 0; background: none; color: inh
 .case__delete { height: 40px; padding: 0 16px; border: 2px solid #e3b4b4; color: #b23a3a; background: #fff; }
 .case__delete:hover { background: #fdf1f1; border-color: #b23a3a; }
 .case__delete.is-confirm { background: #b23a3a; border-color: #b23a3a; color: #fff; }
+
+/* Menu sempre no centro exato do cabeçalho (computador) */
+@media (min-width: 861px) {
+  .header__inner { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .header__actions { justify-self: end; }
+}

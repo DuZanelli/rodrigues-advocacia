@@ -656,11 +656,22 @@ function makeLocalBackend() {
     }
   ];
   const seeded = (async () => {
-    if (store.get('ra_seed', 0) >= 4) return;
-    store.set('ra_users', { ...SEED_USERS });
-    store.set('ra_cases', SEED_CASES);
-    store.remove('ra_session');
-    store.set('ra_seed', 4);
+    if (store.get('ra_seed', 0) < 4) {
+      store.set('ra_users', { ...SEED_USERS });
+      store.set('ra_cases', SEED_CASES);
+      store.remove('ra_session');
+      store.set('ra_seed', 4);
+    }
+    // Versão 5: cliente Pablo Escobar (sem apagar o que já foi feito no navegador)
+    if (store.get('ra_seed', 0) < 5) {
+      const users = store.get('ra_users', {});
+      users['pabloescobar@gmail.com'] = {"name": "Pablo Escobar", "tipo": "cliente", "salt": "p4bl0s4lt", "hash": "523b506a89d7643f1ebf57ff265a0da36a55e9c1394261d5c2c4adb76bc335ce"};
+      store.set('ra_users', users);
+      const all = store.get('ra_cases', []);
+      if (!all.some((c) => c.id === 'caso11')) all.push({"id": "caso11", "cliente_id": "pabloescobar@gmail.com", "numero": "1003456-78.2025.8.26.0048", "titulo": "Usucapião de sítio em Atibaia", "area": "Direito imobiliário", "status": "andamento", "resultado": "", "data_inicio": "2025-04-22", "data_fim": "", "advogado": "Dr. Rodrigues", "descricao": "Ação de usucapião extraordinária para regularizar a propriedade de um sítio ocupado pelo cliente há mais de 15 anos, sem escritura em seu nome.", "andamentos": [{"data": "2026-10-14", "texto": "Vistoria do perito judicial realizada no imóvel. Aguardando o laudo."}, {"data": "2026-02-03", "texto": "Confrontantes citados; nenhum vizinho contestou o pedido."}, {"data": "2025-08-19", "texto": "Prefeitura e Estado informaram não ter interesse no imóvel."}, {"data": "2025-04-22", "texto": "Petição inicial protocolada com planta e memorial descritivo."}]});
+      store.set('ra_cases', all);
+      store.set('ra_seed', 5);
+    }
   })();
 
   const toUser = (email, u) => ({ id: email, email, name: u.name, tipo: u.tipo || 'cliente' });

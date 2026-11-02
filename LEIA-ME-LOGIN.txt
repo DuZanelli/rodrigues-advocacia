@@ -18,6 +18,9 @@ CONTA DO ESCRITÓRIO
   Advogado: rodrigues@advocacia.sp.br  /  borabill
   Já vem com 9 casos de exemplo (de 9 áreas diferentes), de clientes fictícios.
 
+  Cliente:  pabloescobar@gmail.com  /  pablobonitao
+  Tem 1 caso (usucapião, direito imobiliário).
+
 Atenção: enquanto o Supabase não for configurado, tudo fica salvo só no
 navegador de quem está usando. Os 9 casos aparecem em qualquer navegador
 porque vêm prontos no site, mas casos novos cadastrados num computador não
