@@ -1,0 +1,47 @@
+LOGIN DE CLIENTES E ADVOGADOS — COMO FUNCIONA
+=============================================
+
+O botão "Entrar" (ao lado de "Agendar conversa") abre a janela de login
+com duas abas:
+
+  • Sou cliente  → vê "Meus casos": casos em andamento e o histórico
+                   dos casos antigos (encerrados), com os andamentos.
+  • Sou advogado → vê o "Painel do advogado": todos os casos de todos os
+                   clientes, busca, "+ Novo caso", editar caso e
+                   adicionar andamentos.
+
+A página fica em area-do-cliente.html.
+
+
+MODO DE TESTE (como está agora)
+-------------------------------
+Sem configurar nada, tudo fica salvo só no navegador de quem está usando.
+Já existem duas contas de teste:
+
+  Cliente:  cliente@demo.com   / cliente123   (já tem 3 casos de exemplo)
+  Advogado: advogado@demo.com  / advogado123
+
+Isso serve para você ver e testar. NÃO serve para clientes de verdade:
+um cliente não veria no celular dele o caso que o advogado cadastrou no
+computador do escritório.
+
+
+COLOCANDO PARA FUNCIONAR DE VERDADE (Supabase, gratuito)
+--------------------------------------------------------
+1. Crie uma conta em https://supabase.com e um projeto novo.
+2. No projeto, abra "SQL Editor" > "New query", cole todo o conteúdo do
+   arquivo supabase.sql e clique em "Run".
+3. Abra "Project Settings" > "API" e copie:
+     - Project URL
+     - anon public key
+4. No arquivo script.js, procure AUTH_CONFIG e cole os dois valores:
+     supabaseUrl: 'https://xxxx.supabase.co',
+     supabaseAnonKey: 'eyJ...',
+5. Em "Authentication" > "URL Configuration", coloque o endereço do seu
+   site em "Site URL" (para os e-mails de confirmação e de senha).
+6. Para criar um advogado: ele cria a conta pelo site e você roda no
+   SQL Editor:
+     update public.perfis set tipo = 'advogado' where email = 'email@do.advogado';
+
+Pronto: as contas de teste deixam de existir e cada cliente passa a ver
+somente os próprios casos (o banco bloqueia o acesso aos casos de outros).

@@ -280,7 +280,716 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ---------- Login de usuário ----------
+     Funciona de dois jeitos:
+     1) SEM configurar nada: as contas ficam salvas no próprio navegador
+        do visitante (bom para testar o fluxo; não serve para produção).
+     2) COM Supabase (grátis em https://supabase.com): crie um projeto,
+        rode o arquivo supabase.sql no SQL Editor, vá em
+        Project Settings > API e cole aqui a URL e a "anon public key".
+        Aí as contas e os casos passam a ficar num servidor de verdade.
+        Veja o passo a passo no arquivo LEIA-ME-LOGIN.txt.              */
+  const AUTH_CONFIG = {
+    supabaseUrl: '',
+    supabaseAnonKey: '',
+  };
+
+  initLogin(AUTH_CONFIG);
+
   /* ---------- Ano no rodapé ---------- */
   const year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
+});
+
+
+/* =========================================================
+   Login (cliente e advogado) — sessão e "backends"
+   Os dois backends têm as mesmas funções:
+     getUser, signIn, signUp, signOut, resetPassword,
+     getCases, getClients, saveCase, addStep
+   ========================================================= */
+// Primeiro nome para exibir ("Dra. Ana Rodrigues" → "Dra. Ana")
+const firstName = (name) => {
+  const p = String(name || '').trim().split(/\s+/);
+  return /^(dra?|sra?)\.?$/i.test(p[0]) && p[1] ? `${p[0]} ${p[1]}` : p[0];
+};
+
+const AREAS_DIREITO = [
+  'Direito tributário', 'Direito trabalhista', 'Direito civil', 'Direito empresarial',
+  'Direito previdenciário', 'Família e sucessões', 'Direito penal',
+  'Direito do consumidor', 'Direito imobiliário', 'Contencioso de grande volume',
+];
+
+/* ----- Backend local (tudo salvo no navegador — só para testar) ----- */
+function makeLocalBackend() {
+  const store = {
+    get(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+    },
+    set(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* sem armazenamento */ }
+    },
+    remove(key) {
+      try { localStorage.removeItem(key); } catch { /* sem armazenamento */ }
+    },
+  };
+
+  const hash = async (text) => {
+    if (window.crypto && crypto.subtle) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+    let h = 0; // alternativa simples se o navegador não tiver crypto.subtle
+    for (const c of text) h = (h * 31 + c.charCodeAt(0)) | 0;
+    return String(h);
+  };
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  const addUser = async (users, email, name, password, tipo) => {
+    const salt = Math.random().toString(36).slice(2);
+    users[email] = { name, tipo, salt, hash: await hash(salt + password) };
+  };
+
+  // Contas e casos de demonstração (criados uma única vez neste navegador)
+  const seeded = (async () => {
+    if (store.get('ra_seed', 0) >= 2) return;
+    const users = store.get('ra_users', {});
+    if (!users['advogado@demo.com']) await addUser(users, 'advogado@demo.com', 'Dra. Ana Rodrigues', 'advogado123', 'advogado');
+    if (!users['cliente@demo.com']) await addUser(users, 'cliente@demo.com', 'João da Silva', 'cliente123', 'cliente');
+    store.set('ra_users', users);
+    const c = 'cliente@demo.com';
+    store.set('ra_cases', [
+      {
+        id: newId(), cliente_id: c, numero: '1012345-67.2025.8.26.0100',
+        titulo: 'Revisão de contrato de financiamento', area: 'Direito civil',
+        status: 'andamento', resultado: '', data_inicio: '2025-03-10', data_fim: '',
+        advogado: 'Dra. Ana Rodrigues',
+        descricao: 'Ação para revisar juros e tarifas cobrados em contrato de financiamento de veículo.',
+        andamentos: [
+          { data: '2026-09-18', texto: 'Perícia contábil concluída. Laudo favorável ao cliente juntado ao processo.' },
+          { data: '2026-04-02', texto: 'Audiência de conciliação realizada, sem acordo.' },
+          { data: '2025-03-10', texto: 'Petição inicial protocolada.' },
+        ],
+      },
+      {
+        id: newId(), cliente_id: c, numero: '0001234-56.2023.5.02.0011',
+        titulo: 'Reclamação trabalhista — horas extras', area: 'Direito trabalhista',
+        status: 'encerrado', resultado: 'Acordo homologado', data_inicio: '2023-06-21', data_fim: '2024-08-15',
+        advogado: 'Dr. Carlos Mendes',
+        descricao: 'Cobrança de horas extras e reflexos não pagos pelo antigo empregador.',
+        andamentos: [
+          { data: '2024-08-15', texto: 'Acordo homologado pelo juiz e pagamento recebido.' },
+          { data: '2024-02-07', texto: 'Audiência de instrução com oitiva de testemunhas.' },
+          { data: '2023-06-21', texto: 'Reclamação protocolada.' },
+        ],
+      },
+      {
+        id: newId(), cliente_id: c, numero: '5009876-12.2022.4.03.6100',
+        titulo: 'Restituição de IR pago a maior', area: 'Direito tributário',
+        status: 'encerrado', resultado: 'Ganho de causa', data_inicio: '2022-01-14', data_fim: '2023-11-30',
+        advogado: 'Dra. Ana Rodrigues',
+        descricao: 'Pedido de restituição de imposto de renda cobrado indevidamente sobre verbas indenizatórias.',
+        andamentos: [
+          { data: '2023-11-30', texto: 'Sentença favorável transitada em julgado. Valor liberado.' },
+          { data: '2022-01-14', texto: 'Ação ajuizada na Justiça Federal.' },
+        ],
+      },
+    ]);
+    store.set('ra_seed', 2);
+  })();
+
+  const toUser = (email, u) => ({ id: email, email, name: u.name, tipo: u.tipo || 'cliente' });
+  const session = () => store.get('ra_session', null);
+  const requireLawyer = () => {
+    if (session()?.tipo !== 'advogado') throw new Error('Apenas advogados podem fazer isso.');
+  };
+  const withClient = (cases) => {
+    const users = store.get('ra_users', {});
+    return cases.map((c) => ({ ...c, cliente: { nome: users[c.cliente_id]?.name || c.cliente_id, email: c.cliente_id } }));
+  };
+
+  return {
+    isDemo: true,
+    async getUser() { await seeded; return session(); },
+    async signIn(email, password) {
+      await seeded;
+      const u = store.get('ra_users', {})[email];
+      if (!u || u.hash !== (await hash(u.salt + password))) throw new Error('E-mail ou senha incorretos.');
+      const user = toUser(email, u);
+      store.set('ra_session', user);
+      return user;
+    },
+    async signUp(name, email, password) {
+      await seeded;
+      const users = store.get('ra_users', {});
+      if (users[email]) throw new Error('Já existe uma conta com este e-mail.');
+      await addUser(users, email, name, password, 'cliente'); // cadastro pelo site é sempre de cliente
+      store.set('ra_users', users);
+      const user = toUser(email, users[email]);
+      store.set('ra_session', user);
+      return user;
+    },
+    async signOut() { store.remove('ra_session'); },
+    async resetPassword() {
+      throw new Error('A recuperação de senha funciona depois de configurar o Supabase no script.js.');
+    },
+    async getCases() {
+      await seeded;
+      const me = session();
+      if (!me) return [];
+      const all = store.get('ra_cases', []);
+      return withClient(me.tipo === 'advogado' ? all : all.filter((c) => c.cliente_id === me.email));
+    },
+    async getClients() {
+      requireLawyer();
+      return Object.entries(store.get('ra_users', {}))
+        .filter(([, u]) => (u.tipo || 'cliente') === 'cliente')
+        .map(([email, u]) => ({ id: email, nome: u.name, email }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+    },
+    async saveCase(data) {
+      requireLawyer();
+      const all = store.get('ra_cases', []);
+      if (data.id) {
+        const i = all.findIndex((c) => c.id === data.id);
+        all[i] = { ...all[i], ...data };
+      } else {
+        all.push({ ...data, id: newId(), andamentos: [] });
+      }
+      store.set('ra_cases', all);
+    },
+    async addStep(caseId, step) {
+      requireLawyer();
+      const all = store.get('ra_cases', []);
+      const c = all.find((x) => x.id === caseId);
+      c.andamentos = [step, ...(c.andamentos || [])];
+      store.set('ra_cases', all);
+    },
+  };
+}
+
+/* ----- Backend Supabase (servidor de verdade) ----- */
+async function makeSupabaseBackend(config) {
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm');
+  const sb = createClient(config.supabaseUrl, config.supabaseAnonKey);
+  const translate = (msg) => ({
+    'Invalid login credentials': 'E-mail ou senha incorretos.',
+    'User already registered': 'Já existe uma conta com este e-mail.',
+    'Email not confirmed': 'Confirme o seu e-mail antes de entrar (veja a sua caixa de entrada).',
+  }[msg] || msg);
+  const fail = (error, text) => { if (error) throw new Error(text || translate(error.message)); };
+
+  // O tipo (cliente/advogado) vem da tabela "perfis", que só o escritório altera
+  const toUser = async (u) => {
+    if (!u) return null;
+    const { data } = await sb.from('perfis').select('nome, tipo').eq('id', u.id).maybeSingle();
+    return {
+      id: u.id, email: u.email,
+      name: data?.nome || u.user_metadata?.name || u.email.split('@')[0],
+      tipo: data?.tipo || 'cliente',
+    };
+  };
+
+  return {
+    isDemo: false,
+    async getUser() { const { data } = await sb.auth.getSession(); return toUser(data.session?.user); },
+    async signIn(email, password) {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      fail(error);
+      return toUser(data.user);
+    },
+    async signUp(name, email, password) {
+      const { data, error } = await sb.auth.signUp({ email, password, options: { data: { name } } });
+      fail(error);
+      if (!data.session) return { pendingConfirmation: true };
+      return toUser(data.user);
+    },
+    async signOut() { await sb.auth.signOut(); },
+    async resetPassword(email) {
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href });
+      fail(error);
+    },
+    // As regras do banco (supabase.sql) garantem que o cliente só recebe os próprios casos
+    async getCases() {
+      const { data, error } = await sb.from('casos')
+        .select('*, cliente:perfis(nome, email)')
+        .order('data_inicio', { ascending: false });
+      fail(error, 'Não foi possível carregar os casos.');
+      return data;
+    },
+    async getClients() {
+      const { data, error } = await sb.from('perfis').select('id, nome, email').eq('tipo', 'cliente').order('nome');
+      fail(error, 'Não foi possível carregar a lista de clientes.');
+      return data;
+    },
+    async saveCase(c) {
+      const row = { ...c };
+      delete row.id; delete row.cliente; delete row.andamentos;
+      ['data_inicio', 'data_fim'].forEach((k) => { if (!row[k]) row[k] = null; });
+      const { error } = c.id
+        ? await sb.from('casos').update(row).eq('id', c.id)
+        : await sb.from('casos').insert(row);
+      fail(error, 'Não foi possível salvar o caso.');
+    },
+    async addStep(caseId, step) {
+      const { data, error } = await sb.from('casos').select('andamentos').eq('id', caseId).single();
+      fail(error, 'Não foi possível salvar o andamento.');
+      const { error: e2 } = await sb.from('casos')
+        .update({ andamentos: [step, ...(data.andamentos || [])] }).eq('id', caseId);
+      fail(e2, 'Não foi possível salvar o andamento.');
+    },
+  };
+}
+
+/* =========================================================
+   Botão "Entrar", janela de login e menu do usuário
+   ========================================================= */
+function initLogin(config) {
+  const loginBtn = document.getElementById('loginBtn');
+  if (!loginBtn) return;
+  const label = loginBtn.querySelector('.login-btn__label');
+  const PORTAL = 'area-do-cliente.html';
+  const onPortal = !!document.getElementById('caseList');
+
+  const backendReady = (config.supabaseUrl && config.supabaseAnonKey)
+    ? makeSupabaseBackend(config).catch((err) => { console.error(err); return makeLocalBackend(); })
+    : Promise.resolve(makeLocalBackend());
+
+  /* ----- Janela de login ----- */
+  const modal = document.createElement('div');
+  modal.className = 'auth-modal';
+  modal.hidden = true;
+  modal.innerHTML = `
+    <div class="auth-modal__box" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button type="button" class="auth-modal__close" aria-label="Fechar">&times;</button>
+      <h2 id="authTitle">Área restrita</h2>
+      <p class="auth-modal__sub">Acesse a sua conta da Rodrigues Advocacia.</p>
+      <div class="auth-tabs" role="tablist" aria-label="Tipo de acesso">
+        <button type="button" class="is-active" data-role="cliente" role="tab">Sou cliente</button>
+        <button type="button" data-role="advogado" role="tab">Sou advogado</button>
+      </div>
+      <form class="auth-form" novalidate>
+        <div data-only="signup" hidden>
+          <label for="authName">Nome completo</label>
+          <input id="authName" type="text" autocomplete="name">
+        </div>
+        <label for="authEmail">E-mail</label>
+        <input id="authEmail" type="email" autocomplete="email" required>
+        <label for="authPass">Senha</label>
+        <input id="authPass" type="password" autocomplete="current-password" required minlength="6">
+        <p class="auth-form__msg" role="status"></p>
+        <button type="submit" class="auth-form__submit">Entrar</button>
+        <div class="auth-form__links">
+          <a href="#" data-link="forgot">Esqueci a minha senha</a>
+          <a href="#" data-link="toggle">Não tem conta? <strong>Criar conta</strong></a>
+        </div>
+        <p class="auth-form__note" data-only="advogado" hidden>
+          As contas de advogado são criadas pelo escritório. Fale com o administrador do site se ainda não tiver acesso.
+        </p>
+        <p class="auth-form__demo" hidden></p>
+      </form>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const $ = (sel) => modal.querySelector(sel);
+  const form = $('.auth-form');
+  const msg = $('.auth-form__msg');
+  const submit = $('.auth-form__submit');
+  const passInput = $('#authPass');
+  const toggleLink = $('[data-link="toggle"]');
+  const demoNote = $('.auth-form__demo');
+  let role = 'cliente';
+  let signup = false;
+
+  const setMsg = (text, type = '') => { msg.textContent = text; msg.className = 'auth-form__msg' + (type ? ' is-' + type : ''); };
+
+  const refresh = () => {
+    modal.querySelectorAll('.auth-tabs button').forEach((b) => {
+      const on = b.dataset.role === role;
+      b.classList.toggle('is-active', on);
+      b.setAttribute('aria-selected', String(on));
+    });
+    if (role === 'advogado') signup = false;
+    $('[data-only="signup"]').hidden = !signup;
+    $('[data-only="advogado"]').hidden = role !== 'advogado';
+    toggleLink.hidden = role === 'advogado';
+    toggleLink.innerHTML = signup ? 'Já tem conta? <strong>Entrar</strong>' : 'Não tem conta? <strong>Criar conta</strong>';
+    $('[data-link="forgot"]').hidden = signup;
+    submit.textContent = signup ? 'Criar conta' : (role === 'advogado' ? 'Entrar como advogado' : 'Entrar');
+    passInput.autocomplete = signup ? 'new-password' : 'current-password';
+    $('#authTitle').textContent = role === 'advogado' ? 'Acesso do advogado' : (signup ? 'Criar conta de cliente' : 'Área do cliente');
+    backendReady.then((b) => {
+      demoNote.hidden = !b.isDemo;
+      demoNote.innerHTML = role === 'advogado'
+        ? 'Modo de teste: <code>advogado@demo.com</code> / <code>advogado123</code>'
+        : 'Modo de teste: <code>cliente@demo.com</code> / <code>cliente123</code>';
+    });
+    setMsg('');
+  };
+
+  modal.querySelectorAll('.auth-tabs button').forEach((b) =>
+    b.addEventListener('click', () => { role = b.dataset.role; refresh(); }));
+  toggleLink.addEventListener('click', (e) => { e.preventDefault(); signup = !signup; refresh(); });
+
+  const openModal = (asRole = 'cliente') => {
+    role = asRole; signup = false;
+    form.reset();
+    refresh();
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => $('#authEmail').focus(), 30);
+  };
+  const closeModal = () => {
+    modal.hidden = true;
+    document.body.style.overflow = '';
+    loginBtn.focus();
+  };
+  $('.auth-modal__close').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+
+  // Permite que a página da área restrita use o login
+  window.RA_AUTH = { open: openModal, backend: backendReady, current: null, ready: false };
+
+  /* ----- Menu do usuário logado ----- */
+  const menu = document.createElement('div');
+  menu.className = 'user-menu';
+  menu.hidden = true;
+  loginBtn.parentElement.style.position = 'relative';
+  loginBtn.insertAdjacentElement('afterend', menu);
+  let currentUser = null;
+
+  const render = (user) => {
+    currentUser = user;
+    const lawyer = user?.tipo === 'advogado';
+    loginBtn.classList.toggle('is-logged', !!user);
+    label.textContent = user ? firstName(user.name) : 'Entrar';
+    loginBtn.title = user ? `Conectado como ${user.email}` : 'Área do cliente';
+    loginBtn.setAttribute('aria-haspopup', user ? 'menu' : 'dialog');
+    menu.innerHTML = user
+      ? `<div class="user-menu__who"><strong></strong><small></small><span class="user-menu__role"></span></div>
+         <a href="${PORTAL}" class="user-menu__link">${lawyer ? 'Painel do advogado' : 'Meus casos'}</a>
+         <button type="button" data-action="logout">Sair</button>`
+      : '';
+    if (user) {
+      menu.querySelector('strong').textContent = user.name;
+      menu.querySelector('small').textContent = user.email;
+      menu.querySelector('.user-menu__role').textContent = lawyer ? 'Advogado' : 'Cliente';
+    }
+    menu.hidden = true;
+    window.RA_AUTH.current = user;
+    window.RA_AUTH.ready = true;
+    document.dispatchEvent(new CustomEvent('auth:change', { detail: user }));
+  };
+
+  menu.addEventListener('click', async (e) => {
+    if (e.target.dataset.action !== 'logout') return;
+    await (await backendReady).signOut();
+    render(null);
+  });
+
+  loginBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (currentUser) menu.hidden = !menu.hidden;
+    else openModal();
+  });
+  document.addEventListener('click', (e) => { if (!menu.contains(e.target)) menu.hidden = true; });
+
+  /* ----- Envio do formulário ----- */
+  const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = $('#authName').value.trim();
+    const email = $('#authEmail').value.trim().toLowerCase();
+    const password = passInput.value;
+
+    if (signup && !name) return setMsg('Informe o seu nome.', 'error');
+    if (!isEmail(email)) return setMsg('Informe um e-mail válido.', 'error');
+    if (password.length < 6) return setMsg('A senha precisa ter pelo menos 6 caracteres.', 'error');
+
+    submit.disabled = true;
+    setMsg('Aguarde...');
+    try {
+      const backend = await backendReady;
+      const user = signup ? await backend.signUp(name, email, password) : await backend.signIn(email, password);
+      if (user && user.pendingConfirmation) {
+        setMsg('Conta criada! Enviamos um link de confirmação para o seu e-mail.', 'success');
+        return;
+      }
+      // Confere se a conta é do tipo escolhido na aba
+      if (user.tipo !== role) {
+        await backend.signOut();
+        throw new Error(user.tipo === 'advogado'
+          ? 'Esta é uma conta de advogado. Use a aba "Sou advogado".'
+          : 'Esta conta não é de advogado. Use a aba "Sou cliente".');
+      }
+      if (!onPortal) { location.href = PORTAL; return; }
+      render(user);
+      closeModal();
+    } catch (err) {
+      setMsg(err.message || 'Não foi possível concluir. Tente novamente.', 'error');
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  $('[data-link="forgot"]').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = $('#authEmail').value.trim().toLowerCase();
+    if (!isEmail(email)) return setMsg('Digite o seu e-mail acima e clique de novo.', 'error');
+    try {
+      await (await backendReady).resetPassword(email);
+      setMsg('Enviamos um link para redefinir a sua senha.', 'success');
+    } catch (err) {
+      setMsg(err.message, 'error');
+    }
+  });
+
+
+  /* ----- Mantém o usuário conectado ao trocar de página ----- */
+  backendReady.then((b) => b.getUser()).then(render).catch(() => render(null));
+}
+
+/* =========================================================
+   Área restrita — "Meus casos" (cliente) e painel do advogado
+   ========================================================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const list = document.getElementById('caseList');
+  if (!list) return; // só roda na página area-do-cliente.html
+
+  const el = (id) => document.getElementById(id);
+  const locked = el('casesLocked');
+  const area = el('casesArea');
+  const empty = el('casesEmpty');
+  const summary = el('casesSummary');
+  const search = el('casesSearch');
+  const newCaseBtn = el('newCaseBtn');
+  let cases = [];
+  let filter = 'todos';
+  let user = null;
+  let backend = null;
+  const isLawyer = () => user?.tipo === 'advogado';
+
+  const fmtDate = (d) => (d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '');
+  const today = () => new Date().toISOString().slice(0, 10);
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* ----- Lista de casos ----- */
+  const draw = () => {
+    const q = search.value.trim().toLowerCase();
+    const shown = cases
+      .filter((c) => filter === 'todos' || c.status === filter)
+      .filter((c) => !q || [c.titulo, c.numero, c.area, c.cliente?.nome, c.cliente?.email]
+        .some((v) => String(v || '').toLowerCase().includes(q)))
+      .sort((a, b) => (a.status === b.status ? 0 : a.status === 'andamento' ? -1 : 1)
+        || String(b.data_inicio).localeCompare(String(a.data_inicio)));
+
+    const openIds = [...list.querySelectorAll('details[open]')].map((d) => d.parentElement.dataset.id);
+    empty.hidden = shown.length > 0;
+    empty.textContent = cases.length ? 'Nenhum caso encontrado neste filtro.'
+      : (isLawyer() ? 'Nenhum caso cadastrado ainda. Clique em "+ Novo caso".' : 'Ainda não há casos vinculados à sua conta.');
+
+    list.innerHTML = shown.map((c) => {
+      const open = c.status === 'andamento';
+      const steps = (c.andamentos || []).map((a) =>
+        `<li><time>${fmtDate(a.data)}</time><span>${esc(a.texto)}</span></li>`).join('');
+      return `
+        <li class="case" data-id="${esc(c.id)}">
+          <details>
+            <summary>
+              <div class="case__main">
+                <span class="case__area">${esc(c.area)}</span>
+                <strong class="case__title">${esc(c.titulo)}</strong>
+                ${c.numero ? `<span class="case__num">Processo nº ${esc(c.numero)}</span>` : ''}
+                ${isLawyer() ? `<span class="case__client">Cliente: ${esc(c.cliente?.nome || '—')}</span>` : ''}
+              </div>
+              <div class="case__side">
+                <span class="case__status case__status--${open ? 'open' : 'closed'}">${open ? 'Em andamento' : 'Encerrado'}</span>
+                <span class="case__dates">${fmtDate(c.data_inicio)}${c.data_fim ? ' – ' + fmtDate(c.data_fim) : ''}</span>
+              </div>
+            </summary>
+            <div class="case__body">
+              ${c.descricao ? `<p>${esc(c.descricao)}</p>` : ''}
+              <dl class="case__info">
+                ${c.advogado ? `<div><dt>Advogado responsável</dt><dd>${esc(c.advogado)}</dd></div>` : ''}
+                ${c.resultado ? `<div><dt>Resultado</dt><dd>${esc(c.resultado)}</dd></div>` : ''}
+                ${isLawyer() && c.cliente?.email ? `<div><dt>E-mail do cliente</dt><dd>${esc(c.cliente.email)}</dd></div>` : ''}
+              </dl>
+              <p class="case__steps-title">Andamentos</p>
+              ${steps ? `<ol class="case__steps">${steps}</ol>` : '<p class="case__no-steps">Nenhum andamento registrado.</p>'}
+              ${isLawyer() ? `
+                <form class="case__add-step">
+                  <input type="date" name="data" value="${today()}" required aria-label="Data do andamento">
+                  <input type="text" name="texto" placeholder="Novo andamento (ex.: audiência marcada para...)" required aria-label="Descrição do andamento">
+                  <button type="submit" class="btn btn--primary">Adicionar</button>
+                </form>
+                <button type="button" class="btn btn--ghost case__edit">Editar caso</button>` : ''}
+            </div>
+          </details>
+        </li>`;
+    }).join('');
+    openIds.forEach((id) => list.querySelector(`.case[data-id="${CSS.escape(id)}"] details`)?.setAttribute('open', ''));
+  };
+
+  const load = async () => {
+    summary.textContent = 'Carregando os casos...';
+    try {
+      cases = (await backend.getCases()) || [];
+      const ativos = cases.filter((c) => c.status === 'andamento').length;
+      summary.textContent = cases.length
+        ? `${cases.length} caso(s) no total · ${ativos} em andamento · ${cases.length - ativos} encerrado(s)`
+        : (isLawyer() ? 'Nenhum caso cadastrado ainda.' : 'Ainda não há casos vinculados à sua conta.');
+      draw();
+    } catch (err) {
+      summary.textContent = err.message;
+    }
+  };
+
+  document.querySelectorAll('.cases__filters button').forEach((b) =>
+    b.addEventListener('click', () => {
+      filter = b.dataset.filter;
+      document.querySelectorAll('.cases__filters button').forEach((x) => x.classList.toggle('is-active', x === b));
+      draw();
+    }));
+  search.addEventListener('input', draw);
+  document.querySelectorAll('[data-open-login]').forEach((b) =>
+    b.addEventListener('click', () => window.RA_AUTH && window.RA_AUTH.open(b.dataset.openLogin)));
+
+  /* ----- Advogado: adicionar andamento e editar caso ----- */
+  list.addEventListener('submit', async (e) => {
+    const f = e.target.closest('.case__add-step');
+    if (!f) return;
+    e.preventDefault();
+    const id = f.closest('.case').dataset.id;
+    const texto = f.texto.value.trim();
+    if (!texto) return;
+    f.querySelector('button').disabled = true;
+    try {
+      await backend.addStep(id, { data: f.data.value || today(), texto });
+      await load();
+    } catch (err) {
+      alertBox(err.message);
+      f.querySelector('button').disabled = false;
+    }
+  });
+  list.addEventListener('click', (e) => {
+    const b = e.target.closest('.case__edit');
+    if (b) openCaseForm(cases.find((c) => String(c.id) === b.closest('.case').dataset.id));
+  });
+  newCaseBtn.addEventListener('click', () => openCaseForm(null));
+
+  const alertBox = (text) => { summary.textContent = text; summary.classList.add('is-error'); };
+
+  /* ----- Janela de cadastro/edição de caso ----- */
+  const caseModal = document.createElement('div');
+  caseModal.className = 'auth-modal';
+  caseModal.hidden = true;
+  caseModal.innerHTML = `
+    <div class="auth-modal__box auth-modal__box--wide" role="dialog" aria-modal="true" aria-labelledby="caseFormTitle">
+      <button type="button" class="auth-modal__close" aria-label="Fechar">&times;</button>
+      <h2 id="caseFormTitle">Novo caso</h2>
+      <p class="auth-modal__sub">O cliente verá este caso na área dele.</p>
+      <form class="auth-form case-form" novalidate>
+        <label for="cfCliente">Cliente *</label>
+        <select id="cfCliente" name="cliente_id" required></select>
+        <p class="case-form__hint">O cliente precisa ter criado a conta dele no site para aparecer nesta lista.</p>
+        <label for="cfTitulo">Título do caso *</label>
+        <input id="cfTitulo" name="titulo" required placeholder="Ex.: Revisão de contrato de aluguel">
+        <div class="case-form__row">
+          <div><label for="cfNumero">Nº do processo</label><input id="cfNumero" name="numero" placeholder="0000000-00.0000.0.00.0000"></div>
+          <div><label for="cfArea">Área *</label><select id="cfArea" name="area" required>
+            ${AREAS_DIREITO.map((a) => `<option>${a}</option>`).join('')}</select></div>
+        </div>
+        <div class="case-form__row">
+          <div><label for="cfStatus">Situação</label><select id="cfStatus" name="status">
+            <option value="andamento">Em andamento</option><option value="encerrado">Encerrado</option></select></div>
+          <div><label for="cfAdvogado">Advogado responsável</label><input id="cfAdvogado" name="advogado"></div>
+        </div>
+        <div class="case-form__row">
+          <div><label for="cfInicio">Início</label><input id="cfInicio" name="data_inicio" type="date"></div>
+          <div><label for="cfFim">Encerramento</label><input id="cfFim" name="data_fim" type="date"></div>
+        </div>
+        <label for="cfResultado">Resultado</label>
+        <input id="cfResultado" name="resultado" placeholder="Ex.: Acordo homologado, ganho de causa...">
+        <label for="cfDescricao">Descrição</label>
+        <textarea id="cfDescricao" name="descricao" rows="3"></textarea>
+        <p class="auth-form__msg" role="status"></p>
+        <button type="submit" class="auth-form__submit">Salvar caso</button>
+      </form>
+    </div>`;
+  document.body.appendChild(caseModal);
+  const cf = caseModal.querySelector('form');
+  const cfMsg = caseModal.querySelector('.auth-form__msg');
+  let editing = null;
+
+  const closeCaseForm = () => { caseModal.hidden = true; document.body.style.overflow = ''; };
+  caseModal.querySelector('.auth-modal__close').addEventListener('click', closeCaseForm);
+  caseModal.addEventListener('click', (e) => { if (e.target === caseModal) closeCaseForm(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !caseModal.hidden) closeCaseForm(); });
+
+  const openCaseForm = async (c) => {
+    editing = c;
+    cf.reset();
+    cfMsg.textContent = ''; cfMsg.className = 'auth-form__msg';
+    caseModal.querySelector('#caseFormTitle').textContent = c ? 'Editar caso' : 'Novo caso';
+    const sel = cf.cliente_id;
+    sel.innerHTML = '<option value="">Carregando clientes...</option>';
+    caseModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    try {
+      const clients = await backend.getClients();
+      sel.innerHTML = '<option value="">Selecione o cliente</option>' +
+        clients.map((k) => `<option value="${esc(k.id)}">${esc(k.nome)} — ${esc(k.email)}</option>`).join('');
+    } catch (err) {
+      sel.innerHTML = '<option value="">Erro ao carregar clientes</option>';
+    }
+    const v = c || { status: 'andamento', advogado: user.name, data_inicio: today(), area: AREAS_DIREITO[0] };
+    ['cliente_id', 'titulo', 'numero', 'area', 'status', 'advogado', 'data_inicio', 'data_fim', 'resultado', 'descricao']
+      .forEach((k) => { if (v[k] != null) cf[k].value = v[k]; });
+    cf.titulo.focus();
+  };
+
+  cf.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(cf).entries());
+    Object.keys(data).forEach((k) => (data[k] = data[k].trim()));
+    if (!data.cliente_id) { cfMsg.textContent = 'Selecione o cliente.'; cfMsg.className = 'auth-form__msg is-error'; return; }
+    if (!data.titulo) { cfMsg.textContent = 'Informe o título do caso.'; cfMsg.className = 'auth-form__msg is-error'; return; }
+    if (data.status === 'encerrado' && !data.data_fim) data.data_fim = today();
+    if (data.status === 'andamento') data.data_fim = '';
+    const btn = cf.querySelector('.auth-form__submit');
+    btn.disabled = true;
+    try {
+      await backend.saveCase(editing ? { ...data, id: editing.id } : data);
+      closeCaseForm();
+      await load();
+    } catch (err) {
+      cfMsg.textContent = err.message; cfMsg.className = 'auth-form__msg is-error';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* ----- Mostra a visão certa para cada tipo de usuário ----- */
+  const apply = async (u) => {
+    user = u;
+    locked.hidden = !!user;
+    area.hidden = !user;
+    const lawyer = isLawyer();
+    el('portalTitle').textContent = lawyer ? 'Painel do advogado' : 'Meus casos';
+    el('portalCrumb').textContent = lawyer ? 'Painel do advogado' : 'Área do cliente';
+    if (!user) return;
+    backend = await window.RA_AUTH.backend;
+    el('casesName').textContent = firstName(user.name);
+    el('casesRole').textContent = lawyer ? 'Advogado' : 'Cliente';
+    newCaseBtn.hidden = !lawyer;
+    search.hidden = !lawyer;
+    el('casesDemo').hidden = !backend.isDemo;
+    summary.classList.remove('is-error');
+    load();
+  };
+  document.addEventListener('auth:change', (e) => apply(e.detail));
+  // Se o login já tiver sido verificado antes desta parte rodar
+  if (window.RA_AUTH && window.RA_AUTH.ready) apply(window.RA_AUTH.current);
 });

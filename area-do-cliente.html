@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Área restrita | Rodrigues Advocacia</title>
+  <meta name="description" content="Área restrita da Rodrigues Advocacia para clientes e advogados.">
+  <meta name="robots" content="noindex">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="icon" type="image/svg+xml" href="logo-icone.svg">
+  <link rel="stylesheet" href="style.css?v=5">
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container header__inner">
+      <a href="index.html" class="brand" aria-label="Rodrigues Advocacia - página inicial">
+        <svg class="brand__logo" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="8" fill="#2c4f7c"/>
+          <text x="24" y="33" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="29" fill="#ffffff">R</text>
+          <rect x="11" y="37.5" width="26" height="2.5" fill="#86dcc6"/>
+        </svg>
+        <span class="brand__text">
+          <strong>Rodrigues</strong>
+          <small>Advocacia</small>
+        </span>
+      </a>
+
+      <nav class="nav" id="nav" aria-label="Menu principal">
+        <ul class="nav__list">
+          <li><a href="index.html" class="nav__link">Início</a></li>
+          <li><a href="index.html#areas" class="nav__link">Áreas de atuação</a></li>
+          <li><a href="endereco.html" class="nav__link">Endereço</a></li>
+        </ul>
+        <a href="contato.html" class="btn btn--light nav__cta">Agendar conversa</a>
+      </nav>
+
+      <div class="header__actions">
+        <a href="contato.html" class="btn btn--light header__cta">Agendar conversa</a>
+        <button type="button" class="login-btn" id="loginBtn" aria-haspopup="dialog" title="Área do cliente">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <span class="login-btn__label">Entrar</span>
+        </button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="nav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <nav class="breadcrumb" aria-label="Você está em">
+          <a href="index.html">Início</a> <span aria-hidden="true">/</span>
+          <span aria-current="page" id="portalCrumb">Área do cliente</span>
+        </nav>
+        <h1 class="page-hero__title" id="portalTitle">Meus casos</h1>
+      </div>
+    </section>
+
+    <section class="cases">
+      <div class="container">
+
+        <!-- Aparece quando a pessoa não está logada -->
+        <div class="cases__locked" id="casesLocked" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <h2>Entre na sua conta para ver os seus casos</h2>
+          <p>Clientes acompanham aqui os processos em andamento e o histórico dos casos já encerrados. Advogados cadastram e atualizam os casos.</p>
+          <div class="cases__locked-actions">
+            <button type="button" class="btn btn--primary btn--lg" data-open-login="cliente">Sou cliente</button>
+            <button type="button" class="btn btn--ghost btn--lg" data-open-login="advogado">Sou advogado</button>
+          </div>
+        </div>
+
+        <!-- Aparece quando a pessoa está logada -->
+        <div id="casesArea" hidden>
+          <div class="cases__top">
+            <div>
+              <h2 class="cases__hello">Olá, <span id="casesName"></span> <span class="cases__role" id="casesRole"></span></h2>
+              <p class="cases__summary" id="casesSummary"></p>
+            </div>
+            <button type="button" class="btn btn--primary" id="newCaseBtn" hidden>+ Novo caso</button>
+          </div>
+
+          <div class="cases__toolbar">
+            <div class="cases__filters" role="tablist" aria-label="Filtrar casos">
+              <button type="button" class="is-active" data-filter="todos">Todos</button>
+              <button type="button" data-filter="andamento">Em andamento</button>
+              <button type="button" data-filter="encerrado">Encerrados</button>
+            </div>
+            <input type="search" class="cases__search" id="casesSearch" placeholder="Buscar por cliente, título ou nº do processo" hidden>
+          </div>
+
+          <p class="cases__demo" id="casesDemo" hidden>
+            <strong>Modo de teste.</strong> Os casos ficam salvos só neste navegador. Depois que o Supabase for configurado
+            (veja o arquivo LEIA-ME-LOGIN.txt), cada cliente verá os casos reais cadastrados pelo escritório.
+          </p>
+
+          <ul class="case-list" id="caseList"></ul>
+          <p class="cases__empty" id="casesEmpty" hidden>Nenhum caso encontrado.</p>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; <span id="year"></span> Rodrigues Advocacia — Sociedade de Advogados</p>
+    </div>
+  </footer>
+
+  <script src="script.js?v=5"></script>
+</body>
+</html>
