@@ -314,6 +314,21 @@ const firstName = (name) => {
   return /^(dra?|sra?)\.?$/i.test(p[0]) && p[1] ? `${p[0]} ${p[1]}` : p[0];
 };
 
+// Cor de cada área (usada para destacar os casos)
+const AREA_CORES = {
+  'Direito tributário': '#1b8a6b',
+  'Direito trabalhista': '#3a6fa5',
+  'Direito civil': '#7b4fb0',
+  'Direito empresarial': '#2c4f7c',
+  'Direito previdenciário': '#c27c0e',
+  'Família e sucessões': '#c2185b',
+  'Direito penal': '#b23a3a',
+  'Direito do consumidor': '#0f8fa8',
+  'Direito imobiliário': '#8a5a2b',
+  'Contencioso de grande volume': '#5b6573',
+};
+const corDaArea = (a) => AREA_CORES[a] || '#26727f';
+
 const AREAS_DIREITO = [
   'Direito tributário', 'Direito trabalhista', 'Direito civil', 'Direito empresarial',
   'Direito previdenciário', 'Família e sucessões', 'Direito penal',
@@ -350,52 +365,302 @@ function makeLocalBackend() {
     users[email] = { name, tipo, salt, hash: await hash(salt + password) };
   };
 
-  // Contas e casos de demonstração (criados uma única vez neste navegador)
+  // Conta do escritório e casos iniciais (criados uma única vez em cada navegador)
+  const SEED_USERS = {
+    "rodrigues@advocacia.sp.br": {
+      "name": "Dr. Rodrigues",
+      "tipo": "advogado",
+      "salt": "r0dr1gu3s",
+      "hash": "abc52a6f86d2328c50dbb181185680c2337bc368d1b57bd97c0c7f3820e23b4d"
+    },
+    "marcos.almeida@exemplo.com": {
+      "name": "Marcos Almeida",
+      "tipo": "cliente",
+      "salt": "wj3degzdpc",
+      "hash": "d9e683d0089ee3ca448ddc0b77c18e6058c6dc7d3330fcc082d7a8e675a62eac"
+    },
+    "fernanda.costa@exemplo.com": {
+      "name": "Fernanda Costa",
+      "tipo": "cliente",
+      "salt": "d3dqciu4jh",
+      "hash": "d2a81e26163bb5d879bf5803ab4d907586704a2c3a57cccfdc653e1f1a5415a5"
+    },
+    "construtora.horizonte@exemplo.com": {
+      "name": "Construtora Horizonte Ltda.",
+      "tipo": "cliente",
+      "salt": "dp95w77zvr",
+      "hash": "38fb5e673a1c08d130e31f108bd55c7274a75e803a692dbe7f7901887a00063e"
+    },
+    "helena.martins@exemplo.com": {
+      "name": "Helena Martins",
+      "tipo": "cliente",
+      "salt": "eh4kxj94ce",
+      "hash": "7276458dbd84c2845b543b6870cd5df8c0180228302c1cb20832e312102de401"
+    },
+    "roberto.nunes@exemplo.com": {
+      "name": "Roberto Nunes",
+      "tipo": "cliente",
+      "salt": "ft8edv6u2y",
+      "hash": "416cfcb401891907320498b920259238c95ce88d088e556a09f3b795000e8543"
+    },
+    "patricia.lima@exemplo.com": {
+      "name": "Patrícia Lima",
+      "tipo": "cliente",
+      "salt": "39fk63ti5t",
+      "hash": "8b052046efdeaeba695c147a1303dc11d7555a51aeb33a36fac5df67465bd360"
+    },
+    "tech.solucoes@exemplo.com": {
+      "name": "Tech Soluções S.A.",
+      "tipo": "cliente",
+      "salt": "9msuaj4zwi",
+      "hash": "27be941f59c507a5365f153a3cd1dbfc0d6fa0ab98791ebad424d6371dcb9095"
+    },
+    "juliana.ramos@exemplo.com": {
+      "name": "Juliana Ramos",
+      "tipo": "cliente",
+      "salt": "3333g83dne",
+      "hash": "1d83e95aeaf13724c99bbe4d7e70356623e2faa4c115d773dded16762cd38c2b"
+    }
+  };
+  const SEED_CASES = [
+    {
+      "id": "caso01",
+      "cliente_id": "construtora.horizonte@exemplo.com",
+      "numero": "5012345-88.2025.4.03.6100",
+      "titulo": "Recuperação de créditos de PIS/COFINS",
+      "area": "Direito tributário",
+      "status": "andamento",
+      "resultado": "",
+      "data_inicio": "2025-02-17",
+      "data_fim": "",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Ação para exclusão do ICMS da base de cálculo do PIS/COFINS e restituição dos valores pagos nos últimos 5 anos.",
+      "andamentos": [
+        {
+          "data": "2026-10-06",
+          "texto": "Parecer contábil apresentado: crédito estimado de R$ 1,2 milhão."
+        },
+        {
+          "data": "2025-11-20",
+          "texto": "Contestação da Fazenda Nacional apresentada."
+        },
+        {
+          "data": "2025-02-17",
+          "texto": "Mandado de segurança impetrado."
+        }
+      ]
+    },
+    {
+      "id": "caso02",
+      "cliente_id": "marcos.almeida@exemplo.com",
+      "numero": "1001876-45.2024.5.02.0045",
+      "titulo": "Reclamação trabalhista — rescisão indireta",
+      "area": "Direito trabalhista",
+      "status": "andamento",
+      "resultado": "",
+      "data_inicio": "2024-08-05",
+      "data_fim": "",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Pedido de rescisão indireta por atrasos salariais recorrentes, com verbas rescisórias e FGTS.",
+      "andamentos": [
+        {
+          "data": "2026-09-23",
+          "texto": "Audiência de instrução designada para 10/12/2026."
+        },
+        {
+          "data": "2025-03-12",
+          "texto": "Audiência inicial sem acordo."
+        },
+        {
+          "data": "2024-08-05",
+          "texto": "Reclamação protocolada."
+        }
+      ]
+    },
+    {
+      "id": "caso03",
+      "cliente_id": "fernanda.costa@exemplo.com",
+      "numero": "1034567-12.2023.8.26.0100",
+      "titulo": "Indenização por danos morais e materiais",
+      "area": "Direito civil",
+      "status": "encerrado",
+      "resultado": "Ganho de causa — R$ 48 mil",
+      "data_inicio": "2023-04-11",
+      "data_fim": "2025-06-30",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Ação de indenização por acidente causado por queda de marquise em estabelecimento comercial.",
+      "andamentos": [
+        {
+          "data": "2025-06-30",
+          "texto": "Valor da condenação depositado e levantado pela cliente."
+        },
+        {
+          "data": "2024-10-15",
+          "texto": "Sentença de procedência confirmada pelo Tribunal."
+        },
+        {
+          "data": "2023-04-11",
+          "texto": "Petição inicial protocolada."
+        }
+      ]
+    },
+    {
+      "id": "caso04",
+      "cliente_id": "tech.solucoes@exemplo.com",
+      "numero": "",
+      "titulo": "Reorganização societária e acordo de sócios",
+      "area": "Direito empresarial",
+      "status": "encerrado",
+      "resultado": "Acordo de sócios assinado",
+      "data_inicio": "2024-01-22",
+      "data_fim": "2024-05-10",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Transformação de Ltda. em S.A., entrada de investidor e redação do acordo de sócios.",
+      "andamentos": [
+        {
+          "data": "2024-05-10",
+          "texto": "Atos registrados na Junta Comercial."
+        },
+        {
+          "data": "2024-03-28",
+          "texto": "Acordo de sócios assinado por todas as partes."
+        },
+        {
+          "data": "2024-01-22",
+          "texto": "Início da due diligence."
+        }
+      ]
+    },
+    {
+      "id": "caso05",
+      "cliente_id": "roberto.nunes@exemplo.com",
+      "numero": "5003210-77.2024.4.03.6183",
+      "titulo": "Aposentadoria especial — atividade insalubre",
+      "area": "Direito previdenciário",
+      "status": "andamento",
+      "resultado": "",
+      "data_inicio": "2024-06-03",
+      "data_fim": "",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Reconhecimento de 25 anos de trabalho com exposição a ruído e agentes químicos para concessão de aposentadoria especial.",
+      "andamentos": [
+        {
+          "data": "2026-08-14",
+          "texto": "Perícia técnica realizada na antiga empresa."
+        },
+        {
+          "data": "2024-06-03",
+          "texto": "Ação ajuizada após negativa do INSS."
+        }
+      ]
+    },
+    {
+      "id": "caso06",
+      "cliente_id": "helena.martins@exemplo.com",
+      "numero": "1009988-30.2022.8.26.0002",
+      "titulo": "Inventário e partilha de bens",
+      "area": "Família e sucessões",
+      "status": "encerrado",
+      "resultado": "Partilha homologada",
+      "data_inicio": "2022-09-19",
+      "data_fim": "2023-12-04",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Inventário judicial com dois imóveis e aplicações financeiras, partilhado entre três herdeiros.",
+      "andamentos": [
+        {
+          "data": "2023-12-04",
+          "texto": "Formal de partilha expedido."
+        },
+        {
+          "data": "2023-07-21",
+          "texto": "Plano de partilha aprovado pelos herdeiros."
+        },
+        {
+          "data": "2022-09-19",
+          "texto": "Abertura do inventário."
+        }
+      ]
+    },
+    {
+      "id": "caso07",
+      "cliente_id": "patricia.lima@exemplo.com",
+      "numero": "1502233-61.2025.8.26.0050",
+      "titulo": "Defesa criminal — estelionato",
+      "area": "Direito penal",
+      "status": "andamento",
+      "resultado": "",
+      "data_inicio": "2025-05-08",
+      "data_fim": "",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Defesa em ação penal por suposto estelionato em transação comercial, com tese de ausência de dolo.",
+      "andamentos": [
+        {
+          "data": "2026-10-20",
+          "texto": "Resposta à acusação apresentada com rol de testemunhas."
+        },
+        {
+          "data": "2025-05-08",
+          "texto": "Constituição da defesa no inquérito policial."
+        }
+      ]
+    },
+    {
+      "id": "caso08",
+      "cliente_id": "juliana.ramos@exemplo.com",
+      "numero": "0012345-90.2025.8.26.0016",
+      "titulo": "Cobrança indevida de plano de saúde",
+      "area": "Direito do consumidor",
+      "status": "encerrado",
+      "resultado": "Acordo — R$ 12 mil",
+      "data_inicio": "2025-01-13",
+      "data_fim": "2025-09-02",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Reajuste abusivo e negativa de cobertura de exame. Pedido de restituição e danos morais.",
+      "andamentos": [
+        {
+          "data": "2025-09-02",
+          "texto": "Acordo homologado e valor pago."
+        },
+        {
+          "data": "2025-04-16",
+          "texto": "Liminar deferida garantindo o exame."
+        },
+        {
+          "data": "2025-01-13",
+          "texto": "Ação protocolada no Juizado Especial."
+        }
+      ]
+    },
+    {
+      "id": "caso09",
+      "cliente_id": "fernanda.costa@exemplo.com",
+      "numero": "1045678-23.2025.8.26.0100",
+      "titulo": "Rescisão de contrato de compra de imóvel na planta",
+      "area": "Direito imobiliário",
+      "status": "andamento",
+      "resultado": "",
+      "data_inicio": "2025-07-28",
+      "data_fim": "",
+      "advogado": "Dr. Rodrigues",
+      "descricao": "Atraso de mais de 180 dias na entrega do apartamento. Pedido de rescisão com devolução integral dos valores pagos.",
+      "andamentos": [
+        {
+          "data": "2026-07-09",
+          "texto": "Construtora apresentou proposta de acordo, em análise."
+        },
+        {
+          "data": "2025-07-28",
+          "texto": "Petição inicial protocolada."
+        }
+      ]
+    }
+  ];
   const seeded = (async () => {
-    if (store.get('ra_seed', 0) >= 2) return;
-    const users = store.get('ra_users', {});
-    if (!users['advogado@demo.com']) await addUser(users, 'advogado@demo.com', 'Dra. Ana Rodrigues', 'advogado123', 'advogado');
-    if (!users['cliente@demo.com']) await addUser(users, 'cliente@demo.com', 'João da Silva', 'cliente123', 'cliente');
-    store.set('ra_users', users);
-    const c = 'cliente@demo.com';
-    store.set('ra_cases', [
-      {
-        id: newId(), cliente_id: c, numero: '1012345-67.2025.8.26.0100',
-        titulo: 'Revisão de contrato de financiamento', area: 'Direito civil',
-        status: 'andamento', resultado: '', data_inicio: '2025-03-10', data_fim: '',
-        advogado: 'Dra. Ana Rodrigues',
-        descricao: 'Ação para revisar juros e tarifas cobrados em contrato de financiamento de veículo.',
-        andamentos: [
-          { data: '2026-09-18', texto: 'Perícia contábil concluída. Laudo favorável ao cliente juntado ao processo.' },
-          { data: '2026-04-02', texto: 'Audiência de conciliação realizada, sem acordo.' },
-          { data: '2025-03-10', texto: 'Petição inicial protocolada.' },
-        ],
-      },
-      {
-        id: newId(), cliente_id: c, numero: '0001234-56.2023.5.02.0011',
-        titulo: 'Reclamação trabalhista — horas extras', area: 'Direito trabalhista',
-        status: 'encerrado', resultado: 'Acordo homologado', data_inicio: '2023-06-21', data_fim: '2024-08-15',
-        advogado: 'Dr. Carlos Mendes',
-        descricao: 'Cobrança de horas extras e reflexos não pagos pelo antigo empregador.',
-        andamentos: [
-          { data: '2024-08-15', texto: 'Acordo homologado pelo juiz e pagamento recebido.' },
-          { data: '2024-02-07', texto: 'Audiência de instrução com oitiva de testemunhas.' },
-          { data: '2023-06-21', texto: 'Reclamação protocolada.' },
-        ],
-      },
-      {
-        id: newId(), cliente_id: c, numero: '5009876-12.2022.4.03.6100',
-        titulo: 'Restituição de IR pago a maior', area: 'Direito tributário',
-        status: 'encerrado', resultado: 'Ganho de causa', data_inicio: '2022-01-14', data_fim: '2023-11-30',
-        advogado: 'Dra. Ana Rodrigues',
-        descricao: 'Pedido de restituição de imposto de renda cobrado indevidamente sobre verbas indenizatórias.',
-        andamentos: [
-          { data: '2023-11-30', texto: 'Sentença favorável transitada em julgado. Valor liberado.' },
-          { data: '2022-01-14', texto: 'Ação ajuizada na Justiça Federal.' },
-        ],
-      },
-    ]);
-    store.set('ra_seed', 2);
+    if (store.get('ra_seed', 0) >= 4) return;
+    store.set('ra_users', { ...SEED_USERS });
+    store.set('ra_cases', SEED_CASES);
+    store.remove('ra_session');
+    store.set('ra_seed', 4);
   })();
 
   const toUser = (email, u) => ({ id: email, email, name: u.name, tipo: u.tipo || 'cliente' });
@@ -457,6 +722,10 @@ function makeLocalBackend() {
         all.push({ ...data, id: newId(), andamentos: [] });
       }
       store.set('ra_cases', all);
+    },
+    async deleteCase(caseId) {
+      requireLawyer();
+      store.set('ra_cases', store.get('ra_cases', []).filter((c) => c.id !== caseId));
     },
     async addStep(caseId, step) {
       requireLawyer();
@@ -531,6 +800,10 @@ async function makeSupabaseBackend(config) {
         : await sb.from('casos').insert(row);
       fail(error, 'Não foi possível salvar o caso.');
     },
+    async deleteCase(caseId) {
+      const { error } = await sb.from('casos').delete().eq('id', caseId);
+      fail(error, 'Não foi possível apagar o caso.');
+    },
     async addStep(caseId, step) {
       const { data, error } = await sb.from('casos').select('andamentos').eq('id', caseId).single();
       fail(error, 'Não foi possível salvar o andamento.');
@@ -586,7 +859,6 @@ function initLogin(config) {
         <p class="auth-form__note" data-only="advogado" hidden>
           As contas de advogado são criadas pelo escritório. Fale com o administrador do site se ainda não tiver acesso.
         </p>
-        <p class="auth-form__demo" hidden></p>
       </form>
     </div>`;
   document.body.appendChild(modal);
@@ -597,7 +869,6 @@ function initLogin(config) {
   const submit = $('.auth-form__submit');
   const passInput = $('#authPass');
   const toggleLink = $('[data-link="toggle"]');
-  const demoNote = $('.auth-form__demo');
   let role = 'cliente';
   let signup = false;
 
@@ -618,12 +889,6 @@ function initLogin(config) {
     submit.textContent = signup ? 'Criar conta' : (role === 'advogado' ? 'Entrar como advogado' : 'Entrar');
     passInput.autocomplete = signup ? 'new-password' : 'current-password';
     $('#authTitle').textContent = role === 'advogado' ? 'Acesso do advogado' : (signup ? 'Criar conta de cliente' : 'Área do cliente');
-    backendReady.then((b) => {
-      demoNote.hidden = !b.isDemo;
-      demoNote.innerHTML = role === 'advogado'
-        ? 'Modo de teste: <code>advogado@demo.com</code> / <code>advogado123</code>'
-        : 'Modo de teste: <code>cliente@demo.com</code> / <code>cliente123</code>';
-    });
     setMsg('');
   };
 
@@ -767,6 +1032,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const newCaseBtn = el('newCaseBtn');
   let cases = [];
   let filter = 'todos';
+  let areaFilter = '';
   let user = null;
   let backend = null;
   const isLawyer = () => user?.tipo === 'advogado';
@@ -780,11 +1046,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const q = search.value.trim().toLowerCase();
     const shown = cases
       .filter((c) => filter === 'todos' || c.status === filter)
+      .filter((c) => !areaFilter || c.area === areaFilter)
       .filter((c) => !q || [c.titulo, c.numero, c.area, c.cliente?.nome, c.cliente?.email]
         .some((v) => String(v || '').toLowerCase().includes(q)))
       .sort((a, b) => (a.status === b.status ? 0 : a.status === 'andamento' ? -1 : 1)
         || String(b.data_inicio).localeCompare(String(a.data_inicio)));
 
+    drawAreas();
     const openIds = [...list.querySelectorAll('details[open]')].map((d) => d.parentElement.dataset.id);
     empty.hidden = shown.length > 0;
     empty.textContent = cases.length ? 'Nenhum caso encontrado neste filtro.'
@@ -795,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const steps = (c.andamentos || []).map((a) =>
         `<li><time>${fmtDate(a.data)}</time><span>${esc(a.texto)}</span></li>`).join('');
       return `
-        <li class="case" data-id="${esc(c.id)}">
+        <li class="case" data-id="${esc(c.id)}" style="--area: ${corDaArea(c.area)}">
           <details>
             <summary>
               <div class="case__main">
@@ -824,13 +1092,35 @@ document.addEventListener('DOMContentLoaded', () => {
                   <input type="text" name="texto" placeholder="Novo andamento (ex.: audiência marcada para...)" required aria-label="Descrição do andamento">
                   <button type="submit" class="btn btn--primary">Adicionar</button>
                 </form>
-                <button type="button" class="btn btn--ghost case__edit">Editar caso</button>` : ''}
+                <div class="case__actions">
+                  <button type="button" class="btn btn--ghost case__edit">Editar caso</button>
+                  <button type="button" class="btn case__delete">Apagar caso</button>
+                </div>` : ''}
             </div>
           </details>
         </li>`;
     }).join('');
     openIds.forEach((id) => list.querySelector(`.case[data-id="${CSS.escape(id)}"] details`)?.setAttribute('open', ''));
   };
+
+  /* ----- Resumo por área (também funciona como filtro) ----- */
+  const areasBox = el('casesAreas');
+  const drawAreas = () => {
+    const count = {};
+    cases.forEach((c) => (count[c.area] = (count[c.area] || 0) + 1));
+    const names = Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b));
+    areasBox.hidden = names.length < 2;
+    areasBox.innerHTML = `<span class="cases__areas-label">${names.length} áreas do direito:</span>` +
+      `<button type="button" class="area-chip${areaFilter ? '' : ' is-active'}" data-area="">Todas <b>${cases.length}</b></button>` +
+      names.map((a) => `<button type="button" class="area-chip${areaFilter === a ? ' is-active' : ''}" data-area="${esc(a)}" style="--area: ${corDaArea(a)}">
+        <i aria-hidden="true"></i>${esc(a)} <b>${count[a]}</b></button>`).join('');
+  };
+  areasBox.addEventListener('click', (e) => {
+    const b = e.target.closest('.area-chip');
+    if (!b) return;
+    areaFilter = areaFilter === b.dataset.area ? '' : b.dataset.area;
+    draw();
+  });
 
   const load = async () => {
     summary.textContent = 'Carregando os casos...';
@@ -871,6 +1161,29 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       alertBox(err.message);
       f.querySelector('button').disabled = false;
+    }
+  });
+  // Apagar: o primeiro clique pede confirmação, o segundo apaga
+  list.addEventListener('click', async (e) => {
+    const del = e.target.closest('.case__delete');
+    if (!del) return;
+    if (!del.classList.contains('is-confirm')) {
+      del.classList.add('is-confirm');
+      del.textContent = 'Clique de novo para apagar';
+      setTimeout(() => {
+        if (!del.isConnected) return;
+        del.classList.remove('is-confirm');
+        del.textContent = 'Apagar caso';
+      }, 4000);
+      return;
+    }
+    del.disabled = true;
+    try {
+      await backend.deleteCase(del.closest('.case').dataset.id);
+      await load();
+    } catch (err) {
+      alertBox(err.message);
+      del.disabled = false;
     }
   });
   list.addEventListener('click', (e) => {
@@ -985,7 +1298,6 @@ document.addEventListener('DOMContentLoaded', () => {
     el('casesRole').textContent = lawyer ? 'Advogado' : 'Cliente';
     newCaseBtn.hidden = !lawyer;
     search.hidden = !lawyer;
-    el('casesDemo').hidden = !backend.isDemo;
     summary.classList.remove('is-error');
     load();
   };

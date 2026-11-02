@@ -1160,3 +1160,31 @@ button { font: inherit; cursor: pointer; border: 0; background: none; color: inh
   .cases__search { max-width: none; }
   #newCaseBtn { width: 100%; }
 }
+
+/* Destaque por área do direito */
+.case { border-left: 5px solid var(--area, var(--teal-600)); }
+.case__area {
+  align-self: flex-start;
+  color: #fff; background: var(--area, var(--teal-600));
+  padding: 3px 9px; border-radius: 999px; margin-bottom: 4px;
+}
+.cases__areas { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 18px; }
+.cases__areas-label { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; margin-right: 4px; }
+.area-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 999px; font-size: .8rem; font-weight: 600;
+  background: #fff; border: 1.5px solid var(--border); color: var(--text);
+  transition: border-color .2s, background .2s;
+}
+.area-chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--area); }
+.area-chip b { font-size: .72rem; color: var(--muted); }
+.area-chip:hover { border-color: var(--area, var(--blue-900)); }
+.area-chip.is-active { background: var(--area, var(--blue-900)); border-color: var(--area, var(--blue-900)); color: #fff; }
+.area-chip.is-active i { background: #fff; }
+.area-chip.is-active b { color: rgba(255,255,255,.85); }
+
+/* Ações do advogado no caso */
+.case__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.case__delete { height: 40px; padding: 0 16px; border: 2px solid #e3b4b4; color: #b23a3a; background: #fff; }
+.case__delete:hover { background: #fdf1f1; border-color: #b23a3a; }
+.case__delete.is-confirm { background: #b23a3a; border-color: #b23a3a; color: #fff; }

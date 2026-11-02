@@ -13,17 +13,15 @@ com duas abas:
 A página fica em area-do-cliente.html.
 
 
-MODO DE TESTE (como está agora)
--------------------------------
-Sem configurar nada, tudo fica salvo só no navegador de quem está usando.
-Já existem duas contas de teste:
+CONTA DO ESCRITÓRIO
+-------------------
+  Advogado: rodrigues@advocacia.sp.br  /  borabill
+  Já vem com 9 casos de exemplo (de 9 áreas diferentes), de clientes fictícios.
 
-  Cliente:  cliente@demo.com   / cliente123   (já tem 3 casos de exemplo)
-  Advogado: advogado@demo.com  / advogado123
-
-Isso serve para você ver e testar. NÃO serve para clientes de verdade:
-um cliente não veria no celular dele o caso que o advogado cadastrou no
-computador do escritório.
+Atenção: enquanto o Supabase não for configurado, tudo fica salvo só no
+navegador de quem está usando. Os 9 casos aparecem em qualquer navegador
+porque vêm prontos no site, mas casos novos cadastrados num computador não
+aparecem nos outros.
 
 
 COLOCANDO PARA FUNCIONAR DE VERDADE (Supabase, gratuito)
